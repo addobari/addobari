@@ -1,6 +1,8 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
-  <img alt="Building products that get you. Addo Bari, product manager in Tokyo." src="assets/header-light.svg" width="100%">
+  <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/addobari/addobari/output/header-dark-still.png">
+  <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/addobari/addobari/output/header-light-still.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/addobari/addobari/output/header-dark.webp">
+  <img alt="Building products that get you. Addo Bari, product manager in Tokyo. Above the type, a band of fluted glass over a slowly moving colour field." src="https://raw.githubusercontent.com/addobari/addobari/output/header-light.webp" width="100%">
 </picture>
 
 <br>
@@ -54,4 +56,4 @@ Outside work I build the tools I wanted and couldn't find. Mostly macOS and the 
 
 <br>
 
-<sub>The chart and the Writing section refresh daily through [a small script](scripts/update.py) in this repo.</sub>
+<sub>The header band is rendered each morning from the same WebGL shaders as addobari.com, so it is never the same twice. The chart and Writing refresh daily too. [How it works](scripts/).</sub>

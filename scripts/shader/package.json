@@ -1,0 +1,10 @@
+{
+  "name": "profile-shader",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@paper-design/shaders": "0.0.81",
+    "esbuild": "^0.24.0",
+    "puppeteer-core": "^23.0.0"
+  }
+}

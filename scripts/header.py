@@ -1,51 +1,107 @@
-"""Build the profile header from the addobari.com homepage hero:
-'Building products / that get you.' in Inter Tight, each line rising into
-place once on load (the site's LineReveal), still for reduced motion.
+"""Profile header: the addobari.com hero type under a band of the site's own
+shaders. A MeshGradient film loop (the project-tile palette) is rendered frame
+by frame through the fluted-glass shader in headless Chrome, crossfaded into a
+seamless loop, laid over the typeset panel, and written as animated WebP.
 
-Run by hand when the header changes:  python scripts/header.py
+Each day the film starts from a different point, so the band is never the
+same twice. A static PNG is written too for visitors who prefer reduced motion.
+
+usage: python scripts/header.py [--chrome PATH] [--date YYYY-MM-DD]   (writes to out/)
 """
+import argparse
+import datetime as dt
+import io
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 
-from typeset import SANS, THEMES, frame, text, text_path
+import cairosvg
+from PIL import Image
 
-OUT = Path(__file__).resolve().parent.parent / "assets"
+from typeset import SANS, THEMES, text, text_path
 
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "out"            # published to the `output` branch, never committed to main
+SHADER = Path(__file__).resolve().parent / "shader"
+
+SCALE = 2                     # render at 2x for sharp type on retina screens
+W, PAD, RADIUS = 880, 40, 14
+BAND_H = 150
 LINES = ["Building products", "that get you."]
-W, H = 800, 236
-SIZE = 88
-LEADING = SIZE * 1.04
-FIRST_BASELINE = 140
+SIZE, LEADING = 88, 88 * 1.04
+TEXT_TOP = BAND_H + 36        # rule sits here
+H = round(TEXT_TOP + 122 + LEADING + 48)
+
+FPS, SECONDS, FADE = 12, 8, 2  # 8 s loop, 2 s crossfade to hide the seam
+SHADER_SPEED = 0.6             # shader-ms per real ms, close to the site's hover speed
 
 
-def build(theme: str) -> str:
+def text_layer(theme: str) -> Image.Image:
     c = THEMES[theme]
-    css = """
-.l{transform:translateY(105%);animation:rise 1.25s cubic-bezier(.22,1,.36,1) forwards}
-.l1{animation-delay:.1s}.l2{animation-delay:.22s}
-@keyframes rise{to{transform:none}}
-@media (prefers-reduced-motion:reduce){.l{transform:none;animation:none}}
-"""
+    x0 = PAD
     parts = [
-        f'<rect x="0" y="0" width="{W}" height="1" fill="{c["ink"]}"/>',
-        text("Addo Bari Alyfathin", SANS, 15, 0, 30, c["muted"], tracking=-0.005),
-        text("Product manager, Tokyo", SANS, 15, W, 30, c["muted"], tracking=-0.005, align="right"),
+        f'<rect width="{W}" height="{H}" rx="{RADIUS}" fill="{c["bg"]}"/>',
+        f'<rect x="{x0}" y="{TEXT_TOP}" width="{W - 2 * PAD}" height="1" fill="{c["ink"]}"/>',
+        text("Addo Bari Alyfathin", SANS, 15, x0, TEXT_TOP + 30, c["muted"], tracking=-0.005),
+        text("Product manager, Tokyo", SANS, 15, W - PAD, TEXT_TOP + 30, c["muted"],
+             tracking=-0.005, align="right"),
     ]
-    clips = []
-    for i, line in enumerate(LINES, start=1):
-        y = FIRST_BASELINE + (i - 1) * LEADING
-        d, _ = text_path(line, SANS, SIZE, -4, y, tracking=-0.045)
-        top = y - SIZE * 0.82
-        clips.append(f'<clipPath id="c{i}"><rect x="-20" y="{top:.1f}" width="{W + 40}" '
-                     f'height="{SIZE * 1.1:.1f}"/></clipPath>')
-        parts.append(f'<g clip-path="url(#c{i})"><g class="l l{i}" style="transform-box:fill-box">'
-                     f'<path fill="{c["ink"]}" d="{d}"/></g></g>')
-    defs = "".join(clips) + f"<style>{css}</style>"
-    label = "Building products that get you. Addo Bari, product manager in Tokyo."
-    return frame("".join(parts), W, H, theme, label, defs)
+    for i, line in enumerate(LINES):
+        d, _ = text_path(line, SANS, SIZE, x0 - 4, TEXT_TOP + 122 + i * LEADING, tracking=-0.045)
+        parts.append(f'<path fill="{c["ink"]}" d="{d}"/>')
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
+           f'viewBox="0 0 {W} {H}">' + "".join(parts) + "</svg>")
+    png = cairosvg.svg2png(bytestring=svg.encode(), output_width=W * SCALE)
+    return Image.open(io.BytesIO(png)).convert("RGBA")
+
+
+def band_mask() -> Image.Image:
+    """Full-bleed band with the card's top corners rounded."""
+    w, h, r = W * SCALE, BAND_H * SCALE, RADIUS * SCALE
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}">'
+           f'<path d="M0 {h} V{r} A{r} {r} 0 0 1 {r} 0 H{w - r} A{r} {r} 0 0 1 {w} {r} V{h} Z" fill="#fff"/></svg>')
+    return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode()))).convert("L")
+
+
+def render_band(chrome: str, day: dt.date, workdir: Path) -> list[Image.Image]:
+    loop, fade = FPS * SECONDS, FPS * FADE
+    total = loop + fade
+    span = (total / FPS) * 1000 * SHADER_SPEED
+    start = (day.toordinal() % 997) * 9_000          # a different stretch of film each day
+    subprocess.run(["node", str(SHADER / "render.mjs"), str(workdir), str(total), str(span),
+                    str(start), chrome], check=True)
+    raw = [Image.open(p).convert("RGB") for p in sorted(workdir.glob("f*.png"))]
+    crop = (80 * SCALE, 12 * SCALE, (80 + W) * SCALE, (12 + BAND_H) * SCALE)   # drop the overscan edges
+    raw = [im.crop(crop) for im in raw]
+    # Seamless loop: frame i of the loop fades from the tail (loop+i) into the head (i).
+    return [Image.blend(raw[loop + i], raw[i], i / fade) if i < fade else raw[i]
+            for i in range(loop)]
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--chrome", default=shutil.which("google-chrome") or "/usr/bin/google-chrome")
+    ap.add_argument("--date", default=dt.date.today().isoformat())
+    args = ap.parse_args()
+    day = dt.date.fromisoformat(args.date)
+    OUT.mkdir(exist_ok=True)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        band = render_band(args.chrome, day, Path(tmp))
+    mask = band_mask()
+    for theme in THEMES:
+        base = text_layer(theme)
+        out = []
+        for f in band:
+            im = base.copy()
+            im.paste(f, (0, 0), mask)
+            out.append(im)
+        out[0].save(OUT / f"header-{theme}.webp", save_all=True, append_images=out[1:],
+                    duration=round(1000 / FPS), loop=0, quality=82, method=6)
+        out[0].save(OUT / f"header-{theme}-still.png", optimize=True)
+        print(theme, (OUT / f"header-{theme}.webp").stat().st_size // 1024, "KB")
 
 
 if __name__ == "__main__":
-    OUT.mkdir(exist_ok=True)
-    for theme in THEMES:
-        (OUT / f"header-{theme}.svg").write_text(build(theme))
-    print("header written")
+    main()
