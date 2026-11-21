@@ -10,14 +10,30 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import TTFont
 
 FONTS = Path(__file__).parent / "fonts"
-SERIF = FONTS / "cormorant-garamond-latin-500-normal.woff2"
-SERIF_ITALIC = FONTS / "cormorant-garamond-latin-500-italic.woff2"
-MONO = FONTS / "ibm-plex-mono-latin-500-normal.woff2"
+# Type and colour follow the addobari.com studio system:
+# Inter Tight 500 for display and labels, Instrument Serif italic for emphasis,
+# paper/ink with 64% "soft" ink and 16% rules, one indigo accent.
+SERIF = FONTS / "instrument-serif-latin-400-normal.woff2"
+SERIF_ITALIC = FONTS / "instrument-serif-latin-400-italic.woff2"
+SANS = FONTS / "inter-tight-latin-500-normal.woff2"
 
 THEMES = {
-    "light": {"ink": "#16150F", "muted": "#7A766C", "rule": "#D9D5CC", "faint": "#E6E2DA"},
-    "dark": {"ink": "#EDEAE3", "muted": "#8E897F", "rule": "#3A3832", "faint": "#2A2925"},
+    "light": {"bg": "#F2F0EB", "ink": "#0E0E0C", "muted": "#605F5C", "rule": "#CECCC7",
+              "faint": "#E6E3DC", "accent": "#4A46B0"},
+    "dark": {"bg": "#0E0E0C", "ink": "#F2F0EB", "muted": "#A5A39F", "rule": "#333230",
+             "faint": "#1C1C19", "accent": "#B9B4F2"},
 }
+PAD = 40   # paper margin around every image
+
+
+def frame(inner: str, w: int, h: int, theme: str, label: str, defs: str = "") -> str:
+    """Wrap content drawn in a w×h box in a paper panel with a margin."""
+    c = THEMES[theme]
+    W, H = w + 2 * PAD, h + 2 * PAD
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
+            f'role="img" aria-label="{label}"><defs>{defs}</defs>'
+            f'<rect width="{W}" height="{H}" rx="14" fill="{c["bg"]}"/>'
+            f'<g transform="translate({PAD} {PAD})">{inner}</g></svg>')
 
 
 def _num(v: float) -> str:

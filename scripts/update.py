@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-from typeset import MONO, SERIF, SERIF_ITALIC, THEMES, measure, text
+from typeset import SANS, SERIF_ITALIC, THEMES, frame, measure, text
 
 ROOT = Path(__file__).resolve().parent.parent
 README = ROOT / "README.md"
@@ -110,14 +110,18 @@ def chart(days, theme: str) -> str:
     weeks = weekly(days)
     total = sum(n for _, n in days)
     peak_start, peak = max(weeks, key=lambda w: w[1])
-    W, H = 880, 236
-    top, base = 86, 196                   # bar area
+    W, H = 800, 250
+    top, base = 134, 214                  # bar area
     gap = W / len(weeks)
     bar = max(gap * 0.42, 3)
+    figure = f"{total:,}"
+    fig_w = measure(figure, SERIF_ITALIC, 72, tracking=-0.035)
     parts = [
-        text(f"{total:,}", SERIF_ITALIC, 56, 0, 52, c["ink"]),
-        text("CONTRIBUTIONS, LAST 12 MONTHS", MONO, 12,
-             measure(f"{total:,}", SERIF_ITALIC, 56) + 16, 50, c["muted"], tracking=0.14),
+        f'<rect x="0" y="0" width="{W}" height="1" fill="{c["ink"]}"/>',
+        text("Activity", SANS, 15, 0, 30, c["muted"], tracking=-0.005),
+        text("github.com/addobari", SANS, 15, W, 30, c["muted"], tracking=-0.005, align="right"),
+        text(figure, SERIF_ITALIC, 72, -2, 98, c["ink"], tracking=-0.035),
+        text("contributions in the last 12 months", SANS, 22, fig_w + 14, 96, c["ink"], tracking=-0.03),
         f'<rect x="0" y="{base}" width="{W}" height="1" fill="{c["rule"]}"/>',
     ]
     for i, (start, n) in enumerate(weeks):
@@ -126,24 +130,24 @@ def chart(days, theme: str) -> str:
             parts.append(f'<circle cx="{cx:.1f}" cy="{base - 4}" r="1.4" fill="{c["rule"]}"/>')
             continue
         h = max((n / peak) ** 0.75 * (base - top), bar)   # gentle compression so quiet weeks still read
-        fill = c["ink"] if (start, n) == (peak_start, peak) else c["muted"]
+        is_peak = (start, n) == (peak_start, peak)
+        fill = c["accent"] if is_peak else c["muted"]
         parts.append(f'<rect x="{cx - bar / 2:.1f}" y="{base - h:.1f}" width="{bar:.1f}" '
                      f'height="{h:.1f}" rx="{bar / 2:.1f}" fill="{fill}"/>')
-        if (start, n) == (peak_start, peak):
-            label = f"{peak} IN THE WEEK OF {start.strftime('%-d %b').upper()}"
+        if is_peak:
+            label = f"{peak} in the week of {start.strftime('%-d %b')}"
             align = "right" if cx > W * 0.6 else "left"
-            lx = cx + (-10 if align == "right" else 10)
-            parts.append(text(label, MONO, 11.5, lx, top - 10, c["ink"], tracking=0.1, align=align))
+            lx = cx + (-14 if align == "right" else 14)
+            parts.append(text(label, SANS, 14, lx, top + 4, c["accent"], tracking=-0.005, align=align))
     seen = set()
     for i, (start, _) in enumerate(weeks):                 # month ticks
         if start.month in seen or start.day > 7:
             continue
         seen.add(start.month)
-        parts.append(text(start.strftime("%b").upper(), MONO, 11.5, gap * i + gap / 2, base + 22,
-                          c["muted"], tracking=0.12, align="center"))
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
-            f'role="img" aria-label="{total:,} GitHub contributions in the last 12 months, by week. '
-            f'Busiest week: {peak}.">' + "".join(parts) + "</svg>")
+        parts.append(text(start.strftime("%b"), SANS, 13, gap * i + gap / 2, base + 26,
+                          c["muted"], align="center"))
+    label = f"{total:,} GitHub contributions in the last 12 months, by week. Busiest week: {peak}."
+    return frame("".join(parts), W, H, theme, label)
 
 
 def main() -> int:
