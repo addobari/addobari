@@ -133,7 +133,7 @@ def chart(days, theme: str) -> str:
             label = f"{peak} IN THE WEEK OF {start.strftime('%-d %b').upper()}"
             align = "right" if cx > W * 0.6 else "left"
             lx = cx + (-10 if align == "right" else 10)
-            parts.append(text(label, MONO, 11.5, lx, top + 8, c["ink"], tracking=0.1, align=align))
+            parts.append(text(label, MONO, 11.5, lx, top - 10, c["ink"], tracking=0.1, align=align))
     seen = set()
     for i, (start, _) in enumerate(weeks):                 # month ticks
         if start.month in seen or start.day > 7:
