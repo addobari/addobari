@@ -11,10 +11,9 @@ from fontTools.ttLib import TTFont
 
 FONTS = Path(__file__).parent / "fonts"
 # Type and colour follow the addobari.com studio system:
-# Inter Tight 500 for display and labels, Instrument Serif italic for emphasis,
+# Inter Tight 500 for display and labels, Instrument Serif for emphasis,
 # paper/ink with 64% "soft" ink and 16% rules, one indigo accent.
 SERIF = FONTS / "instrument-serif-latin-400-normal.woff2"
-SERIF_ITALIC = FONTS / "instrument-serif-latin-400-italic.woff2"
 SANS = FONTS / "inter-tight-latin-500-normal.woff2"
 
 THEMES = {

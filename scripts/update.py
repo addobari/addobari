@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-from typeset import SANS, SERIF_ITALIC, THEMES, frame, measure, text
+from typeset import SANS, SERIF, THEMES, frame, measure, text
 
 ROOT = Path(__file__).resolve().parent.parent
 README = ROOT / "README.md"
@@ -115,12 +115,12 @@ def chart(days, theme: str) -> str:
     gap = W / len(weeks)
     bar = max(gap * 0.42, 3)
     figure = f"{total:,}"
-    fig_w = measure(figure, SERIF_ITALIC, 72, tracking=-0.035)
+    fig_w = measure(figure, SERIF, 72, tracking=-0.035)
     parts = [
         f'<rect x="0" y="0" width="{W}" height="1" fill="{c["ink"]}"/>',
         text("Activity", SANS, 15, 0, 30, c["muted"], tracking=-0.005),
         text("github.com/addobari", SANS, 15, W, 30, c["muted"], tracking=-0.005, align="right"),
-        text(figure, SERIF_ITALIC, 72, -2, 98, c["ink"], tracking=-0.035),
+        text(figure, SERIF, 72, -2, 98, c["ink"], tracking=-0.035),
         text("contributions in the last 12 months", SANS, 22, fig_w + 14, 96, c["ink"], tracking=-0.03),
         f'<rect x="0" y="{base}" width="{W}" height="1" fill="{c["rule"]}"/>',
     ]

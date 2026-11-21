@@ -6,7 +6,7 @@ Run by hand when the header changes:  python scripts/header.py
 """
 from pathlib import Path
 
-from typeset import SANS, SERIF_ITALIC, THEMES, frame, text, text_path
+from typeset import SANS, SERIF, THEMES, frame, text, text_path
 
 OUT = Path(__file__).resolve().parent.parent / "assets"
 
@@ -51,7 +51,7 @@ def build(theme: str) -> str:
         '<g clip-path="url(#stage)">',
     ]
     for i, verb in enumerate(VERBS):
-        d, width = text_path(verb, SERIF_ITALIC, VERB_SIZE, -4, BASELINE, tracking=-0.035)
+        d, width = text_path(verb, SERIF, VERB_SIZE, -4, BASELINE, tracking=-0.03)
         parts.append(f'<g class="v v{i}"><path fill="{c["ink"]}" d="{d}"/>'
                      f'{arrow(width + 18, BASELINE - 78, c["accent"])}</g>')
     parts.append("</g>")
