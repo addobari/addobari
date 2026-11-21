@@ -1,63 +1,46 @@
-"""Build the animated profile header: 'What I ___' with the verb cycling
-build → write → watch → listen → eat, as on the link-in-bio page.
-Styled after the addobari.com studio homepage.
+"""Build the profile header from the addobari.com homepage hero:
+'Building products / that get you.' in Inter Tight, each line rising into
+place once on load (the site's LineReveal), still for reduced motion.
 
 Run by hand when the header changes:  python scripts/header.py
 """
 from pathlib import Path
 
-from typeset import SANS, SERIF, THEMES, frame, text, text_path
+from typeset import SANS, THEMES, frame, text, text_path
 
 OUT = Path(__file__).resolve().parent.parent / "assets"
 
-VERBS = ["build", "write", "watch", "listen", "eat"]
-STEP = 3.0                      # seconds each verb holds the stage
-PERIOD = STEP * len(VERBS)
-W, H = 800, 262
-VERB_SIZE = 168
-BASELINE = 232
-
-
-def arrow(x, y, colour):
-    s = 24
-    return (f'<g stroke="{colour}" stroke-width="2.6" stroke-linecap="round" '
-            f'stroke-linejoin="round" fill="none">'
-            f'<path d="M{x} {y} L{x + s} {y - s}"/>'
-            f'<path d="M{x + 7} {y - s} L{x + s} {y - s} L{x + s} {y - s + 17}"/></g>')
+LINES = ["Building products", "that get you."]
+W, H = 800, 236
+SIZE = 88
+LEADING = SIZE * 1.04
+FIRST_BASELINE = 140
 
 
 def build(theme: str) -> str:
     c = THEMES[theme]
-    pct_in = 0.6 / PERIOD * 100
-    pct_hold = STEP / PERIOD * 100
-    pct_out = pct_hold + pct_in
-    css = f"""
-.v{{opacity:0;animation:cycle {PERIOD}s cubic-bezier(.22,1,.36,1) infinite both}}
-.v0{{opacity:1}}
-@keyframes cycle{{
-0%{{transform:translateY(120px);opacity:0}}
-{pct_in:.3f}%{{transform:translateY(0);opacity:1}}
-{pct_hold:.3f}%{{transform:translateY(0);opacity:1}}
-{pct_out:.3f}%{{transform:translateY(-80px);opacity:0}}
-100%{{transform:translateY(-80px);opacity:0}}}}
-{''.join(f'.v{i}{{animation-delay:{i * STEP - 0.6:.1f}s}}' for i in range(len(VERBS)))}
-@media (prefers-reduced-motion:reduce){{.v{{animation:none;opacity:0}}.v0{{opacity:1}}}}
+    css = """
+.l{transform:translateY(105%);animation:rise 1.25s cubic-bezier(.22,1,.36,1) forwards}
+.l1{animation-delay:.1s}.l2{animation-delay:.22s}
+@keyframes rise{to{transform:none}}
+@media (prefers-reduced-motion:reduce){.l{transform:none;animation:none}}
 """
     parts = [
         f'<rect x="0" y="0" width="{W}" height="1" fill="{c["ink"]}"/>',
         text("Addo Bari Alyfathin", SANS, 15, 0, 30, c["muted"], tracking=-0.005),
         text("Product manager, Tokyo", SANS, 15, W, 30, c["muted"], tracking=-0.005, align="right"),
-        text("What I", SANS, 46, -1, 104, c["ink"], tracking=-0.045),
-        '<g clip-path="url(#stage)">',
     ]
-    for i, verb in enumerate(VERBS):
-        d, width = text_path(verb, SERIF, VERB_SIZE, -4, BASELINE, tracking=-0.03)
-        parts.append(f'<g class="v v{i}"><path fill="{c["ink"]}" d="{d}"/>'
-                     f'{arrow(width + 18, BASELINE - 78, c["accent"])}</g>')
-    parts.append("</g>")
-    defs = (f'<clipPath id="stage"><rect x="-20" y="114" width="{W + 40}" height="{H - 114 + 30}"/></clipPath>'
-            f'<style>{css}</style>')
-    label = f"What I {', '.join(VERBS)}. Addo Bari, product manager in Tokyo."
+    clips = []
+    for i, line in enumerate(LINES, start=1):
+        y = FIRST_BASELINE + (i - 1) * LEADING
+        d, _ = text_path(line, SANS, SIZE, -4, y, tracking=-0.045)
+        top = y - SIZE * 0.82
+        clips.append(f'<clipPath id="c{i}"><rect x="-20" y="{top:.1f}" width="{W + 40}" '
+                     f'height="{SIZE * 1.1:.1f}"/></clipPath>')
+        parts.append(f'<g clip-path="url(#c{i})"><g class="l l{i}" style="transform-box:fill-box">'
+                     f'<path fill="{c["ink"]}" d="{d}"/></g></g>')
+    defs = "".join(clips) + f"<style>{css}</style>"
+    label = "Building products that get you. Addo Bari, product manager in Tokyo."
     return frame("".join(parts), W, H, theme, label, defs)
 
 

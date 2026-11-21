@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
-  <img alt="What I build, write, watch, listen, eat. Addo Bari, product manager in Tokyo." src="assets/header-light.svg" width="100%">
+  <img alt="Building products that get you. Addo Bari, product manager in Tokyo." src="assets/header-light.svg" width="100%">
 </picture>
 
 <br>
@@ -46,14 +46,11 @@ Outside work I build the tools I wanted and couldn't find. Mostly macOS and the 
 <sub>[ALL ESSAYS ON BE PRESENT &ensp;→](https://addobari.substack.com)</sub>
 <!-- WRITING:END -->
 
-<!-- LATELY:START -->
-<!-- LATELY:END -->
-
 <br>
 
 ### Elsewhere
 
-[addobari.com](https://addobari.com) &ensp;·&ensp; [LinkedIn](https://www.linkedin.com/in/addobari) &ensp;·&ensp; [X](https://x.com/addobari) &ensp;·&ensp; [Letterboxd](https://letterboxd.com/dobari/)
+[addobari.com](https://addobari.com) &ensp;·&ensp; [LinkedIn](https://www.linkedin.com/in/addobari) &ensp;·&ensp; [X](https://x.com/addobari)
 
 <br>
 

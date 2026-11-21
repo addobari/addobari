@@ -1,13 +1,11 @@
 """Daily refresh of the profile README.
 
 - Writing: latest essays from Be Present (Substack RSS)
-- Lately: last film logged on Letterboxd (diary RSS); section hides when empty
 - Activity: weekly contribution chart, rendered as light/dark SVGs
 
 Each source fails soft: if a fetch breaks, that section keeps its last content.
 """
 import datetime as dt
-import html
 import re
 import sys
 import urllib.request
@@ -23,7 +21,6 @@ ASSETS = ROOT / "assets"
 
 GITHUB_USER = "addobari"
 SUBSTACK_FEED = "https://addobari.substack.com/feed"
-LETTERBOXD_USER = "dobari"
 UA = {"User-Agent": "Mozilla/5.0 (profile-readme; github.com/addobari/addobari)"}
 
 
@@ -55,27 +52,6 @@ def writing_section(limit: int = 3) -> str:
             break
     rows.append("<sub>[ALL ESSAYS ON BE PRESENT &ensp;→](https://addobari.substack.com)</sub>")
     return "\n\n".join(rows)
-
-
-# ── Lately (Letterboxd) ──────────────────────────────────────────────────────
-def lately_section() -> str:
-    root = ET.fromstring(fetch(f"https://letterboxd.com/{LETTERBOXD_USER}/rss/"))
-    ns = {"lb": "https://letterboxd.com"}
-    for item in root.iter("item"):
-        film = item.findtext("lb:filmTitle", namespaces=ns)
-        if not film:
-            continue                     # lists and other non-diary items
-        year = item.findtext("lb:filmYear", namespaces=ns) or ""
-        rating = item.findtext("lb:memberRating", namespaces=ns)
-        link = item.findtext("link") or f"https://letterboxd.com/{LETTERBOXD_USER}/"
-        stars = ""
-        if rating:
-            r = float(rating)
-            stars = " &ensp;" + "★" * int(r) + ("½" if r % 1 else "")
-        year = f" ({year})" if year else ""
-        return (f"### Lately\n\nLast watched **[{html.escape(film)}]({link})**{year}{stars}"
-                f" &ensp;<sub>[LETTERBOXD →](https://letterboxd.com/{LETTERBOXD_USER}/)</sub>")
-    return ""                            # nothing logged yet: hide the section
 
 
 # ── Activity chart ───────────────────────────────────────────────────────────
@@ -153,7 +129,7 @@ def chart(days, theme: str) -> str:
 def main() -> int:
     md = README.read_text()
     failures = 0
-    for name, build in (("WRITING", writing_section), ("LATELY", lately_section)):
+    for name, build in (("WRITING", writing_section),):
         try:
             md = replace_section(md, name, build())
         except Exception as e:                       # keep the last good content
