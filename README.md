@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
-  <img alt="Addo Bari — Product manager in Tokyo. I make small, considered software on the side." src="assets/header-light.svg" width="100%">
+  <img alt="What I build, write, watch, listen, eat. Addo Bari, product manager in Tokyo." src="assets/header-light.svg" width="100%">
 </picture>
 
 <br>
@@ -24,12 +24,37 @@ Outside work I build the tools I wanted and couldn't find. Mostly macOS and the 
 
 <br>
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/activity-dark.svg">
+  <img alt="GitHub contributions over the last 12 months, by week" src="assets/activity-light.svg" width="100%">
+</picture>
+
+<br>
+
 ### Writing
 
-**[Be Present](https://addobari.substack.com)** &ensp; Essays on AI, tech, and work, written for people paying attention.
+<!-- WRITING:START -->
+**[You don't set the split](https://addobari.substack.com/p/you-dont-set-the-split)**<br>
+<sub>26 SEP 2026</sub>
+
+**[Whoever funds the boom claims the surplus](https://addobari.substack.com/p/whoever-funds-the-boom-claims-the)**<br>
+<sub>23 SEP 2026</sub>
+
+**[The unemployment rate can look fine and still be a bad deal](https://addobari.substack.com/p/the-unemployment-rate-can-look-fine)**<br>
+<sub>21 SEP 2026</sub>
+
+<sub>[ALL ESSAYS ON BE PRESENT &ensp;→](https://addobari.substack.com)</sub>
+<!-- WRITING:END -->
+
+<!-- LATELY:START -->
+<!-- LATELY:END -->
 
 <br>
 
 ### Elsewhere
 
-[addobari.com](https://addobari.com) &ensp;·&ensp; [LinkedIn](https://www.linkedin.com/in/addobari) &ensp;·&ensp; [X](https://x.com/addobari)
+[addobari.com](https://addobari.com) &ensp;·&ensp; [LinkedIn](https://www.linkedin.com/in/addobari) &ensp;·&ensp; [X](https://x.com/addobari) &ensp;·&ensp; [Letterboxd](https://letterboxd.com/dobari/)
+
+<br>
+
+<sub>The chart and the Writing section refresh daily through [a small script](scripts/update.py) in this repo.</sub>
